@@ -215,39 +215,13 @@ def calculate_scores(patient_dir):
     HD_df["patient_number"].append(patient_number)
     for key in DSC_df.keys():
         if key != "patient_number":
-            if key in results:
-                DSC_df[key].append(results[key][0])
-                HD_df[key].append(results[key][1])
+            lut_key = configs.LUT[key]
+            if lut_key in results:
+                DSC_df[key].append(results[lut_key][0])
+                HD_df[key].append(results[lut_key][1])
             else:
                 DSC_df[key].append('0')
                 HD_df[key].append('0')
-
-DSC_df = {
-    "patient_number": [],
-    "W_GT_Bladder": [],
-    "W_GT_Prostate": [],
-    "W_GT_Rectum": [],
-    "W_GT_bladder_only_Bladder": [],
-    "W_GT_bladder_only_Prostate": [],
-    "W_GT_bladder_only_Rectum": [],
-    "W_NOPD_Bladder": [],
-    "W_NOPD_Prostate": [],
-    "W_NOPD_Rectum": [],
-    "W_urinary_bladder": [],
-}
-HD_df = {
-    "patient_number": [],
-    "W_GT_Bladder": [],
-    "W_GT_Prostate": [],
-    "W_GT_Rectum": [],
-    "W_GT_bladder_only_Bladder": [],
-    "W_GT_bladder_only_Prostate": [],
-    "W_GT_bladder_only_Rectum": [],
-    "W_NOPD_Bladder": [],
-    "W_NOPD_Prostate": [],
-    "W_NOPD_Rectum": [],
-    "W_urinary_bladder": [],
-}
 
 def main(args):
     # args.force_run = True
@@ -312,6 +286,8 @@ def main(args):
         # break
 
 configs = Configs()
+DSC_df = { v: [] for v in configs.LUT.keys() }
+HD_df =  { v: [] for v in configs.LUT.keys() }
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()

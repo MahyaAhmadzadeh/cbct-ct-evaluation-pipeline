@@ -38,6 +38,20 @@ class Configs:
     WARP_PREFIX = "W_"
     AFFINE_TRANSFORM_FILENAME = "LinearTransform.txt"
 
+    LUT = {
+            'patient_number': 'patient_number',
+            'Bladder - GT ALL | PD': 'W_GT_Bladder',
+            'Prostate - GT ALL | PD': 'W_GT_Prostate',
+            'Rectum - GT ALL | PD': 'W_GT_Rectum',
+            'Bladder - GT Bladder Only | PD': 'W_GT_bladder_only_Bladder',
+            'Prostate - GT Bladder Only | PD': 'W_GT_bladder_only_Prostate',
+            'Rectum - GT Bladder Only | PD': 'W_GT_bladder_only_Rectum',
+            'Bladder - NOPD': 'W_NOPD_Bladder',
+            'Prostate - NOPD': 'W_NOPD_Prostate',
+            'Rectum - NOPD': 'W_NOPD_Rectum',
+            'Bladder - TS Bladder | PD': 'W_urinary_bladder'
+        }
+
     def __post_init__(self):
         self.TS_male_roi_subset = [self.TS_BLADDER_CLASS]
         self.TS_female_roi_subset = [self.TS_BLADDER_CLASS]
