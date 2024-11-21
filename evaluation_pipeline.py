@@ -202,10 +202,13 @@ def calculate_scores(patient_dir):
             segment = os.path.join(patient_dir, configs.GT_CONTOURS_DIR, configs.CT_DIR, f"{class_name}.mha")
         
         result = dice(segment, warp)
-        result = result.stdout.split("\n")
-        DSC, HD = list(filter(lambda x: "DICE" in x or "Percent (0.95) Hausdorff distance (boundary)" in x, result))
-        DSC, HD = DSC.split(":")[1].strip(), HD.split("=")[1].strip()
-        results[os.path.basename(warp)[:-4]] = (DSC, HD)
+        if result != None:
+            result = result.stdout.split("\n")
+            DSC, HD = list(filter(lambda x: "DICE" in x or "Percent (0.95) Hausdorff distance (boundary)" in x, result))
+            DSC, HD = DSC.split(":")[1].strip(), HD.split("=")[1].strip()
+            results[os.path.basename(warp)[:-4]] = (DSC, HD)
+        else:
+            results[os.path.basename(warp)[:-4]] = ('None', 'None')
     
     patient_number = get_patient_number(patient_dir)
     DSC_df["patient_number"].append(patient_number)
