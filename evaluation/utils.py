@@ -1,6 +1,7 @@
 from config import Configs
 import re
-
+import os
+import shutil
 
 def get_class_name(path):
     if configs.TS_PROSTATE_CLASS in path:
@@ -23,5 +24,20 @@ def get_roi_subset(patient_dir):
     patient_number = get_patient_number(patient_dir)
     roi_subset = configs.TS_male_roi_subset if patient_number in configs.patients_with_GT else configs.TS_female_roi_subset
     return patient_number, roi_subset
+
+def replace_or_skip(dir, force):
+    
+    if force and os.path.exists(dir):
+        shutil.rmtree(dir)
+
+    if os.path.exists(dir):
+        print("skipping warps creation")
+        return True
+    
+    os.makedirs(dir, exist_ok=True)
+
+    return False
+
+
 
 configs = Configs()

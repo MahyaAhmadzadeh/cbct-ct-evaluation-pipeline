@@ -49,7 +49,10 @@ class Configs:
             'Bladder - NOPD': 'W_NOPD_Bladder',
             'Prostate - NOPD': 'W_NOPD_Prostate',
             'Rectum - NOPD': 'W_NOPD_Rectum',
-            'Bladder - TS Bladder | PD': 'W_urinary_bladder'
+            'Bladder - TS Bladder | PD': 'W_TS_Bladder',
+            'Prostate - TS Bladder | PD': 'W_TS_Prostate',
+            'Rectum - TS Bladder | PD': 'W_TS_Rectum',
+            'urinary_bladder - TS Bladder | PD': 'W_TS_urinary_bladder'
         }
 
     def __post_init__(self):

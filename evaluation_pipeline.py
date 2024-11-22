@@ -7,7 +7,7 @@ import os
 import shutil
 from evaluation.fcsv import create_fcsv
 from config import Configs
-from evaluation.utils import get_class_name, get_roi_subset, get_patient_number
+from evaluation.utils import *
 import pandas as pd
 
 
@@ -37,14 +37,10 @@ def pw_linear_transformation(patient_dir, force_run=False):
 
 def dmap_calcualtion(patient_dir, force_run=False):
     dmaps_dir = os.path.join(patient_dir, configs.DMAPS_DIR)
-    if force_run and os.path.exists(dmaps_dir):
-        shutil.rmtree(dmaps_dir)
-
-    if os.path.exists(dmaps_dir):
-        print("skipping dmap calculation")
+    is_skip = replace_or_skip(dmaps_dir, force_run)
+    if is_skip:
         return
-
-    os.makedirs(dmaps_dir, exist_ok=True)
+    
     ltcbct_seg_path = os.path.join(patient_dir, configs.LT_CBCT_SEG_DIR)
     cbct_gt_contours_path = os.path.join(patient_dir, configs.GT_CONTOURS_DIR, configs.CBCT_DIR)
     input_paths = glob(f"{ltcbct_seg_path}/*") + glob(f"{cbct_gt_contours_path}/*")
@@ -56,14 +52,9 @@ def dmap_calcualtion(patient_dir, force_run=False):
 
 def cxt_conversion(patient_dir, force_run=False):
     cxts_dir = os.path.join(patient_dir, configs.CXTS_DIR)
-    if force_run and os.path.exists(cxts_dir):
-        shutil.rmtree(cxts_dir)
-
-    if os.path.exists(cxts_dir):
-        print("skipping cxts creation")
+    is_skip = replace_or_skip(cxts_dir, force_run)
+    if is_skip:
         return
-    
-    os.makedirs(cxts_dir, exist_ok=True)
     
     ct_seg_path = os.path.join(patient_dir, configs.CT_SEG_DIR)
     ct_gt_contours_path = os.path.join(patient_dir, configs.GT_CONTOURS_DIR, configs.CT_DIR)
@@ -76,14 +67,10 @@ def cxt_conversion(patient_dir, force_run=False):
 
 def create_fcsvfile(patient_dir, force_run=False):
     fcsvs_dir = os.path.join(patient_dir, configs.FCVS_DIR)
-    if force_run and os.path.exists(fcsvs_dir):
-        shutil.rmtree(fcsvs_dir)
-
-    if os.path.exists(fcsvs_dir):
-        print("skipping fcsvs creation")
+    is_skip = replace_or_skip(fcsvs_dir, force_run)
+    if is_skip:
         return
     
-    os.makedirs(fcsvs_dir, exist_ok=True)
     cxts_dir = os.path.join(patient_dir, configs.CXTS_DIR)
     for cxt_filepath in glob(f"{cxts_dir}/*"):
         class_name = get_class_name(cxt_filepath)
@@ -91,8 +78,13 @@ def create_fcsvfile(patient_dir, force_run=False):
         csv_filepath = os.path.join(fcsvs_dir, f"{class_name}.csv")
         create_fcsv(cxt_filepath, fcsv_filepath, csv_filepath)
 
-def create_register_params(patient_dir):
+def create_register_params(patient_dir, force_run):
 
+    reg_params_dir = os.path.join(patient_dir, configs.REGISTER_PARAMS_DIR)
+    is_skip = replace_or_skip(reg_params_dir, force_run)
+    if is_skip:
+        return
+    
     # Flags to keep track of the register params file created
     NOPD, TS, GT_bladder_only, GT = False, False, False, False
     patient_number, TS_roi_subset = get_roi_subset(patient_dir)
@@ -128,7 +120,13 @@ def create_register_params(patient_dir):
 
     return (NOPD, TS, GT_bladder_only, GT)
 
-def start_registration(patient_dir, flags):
+def start_registration(patient_dir, flags, force_run):
+    
+    reg_vol_dir = os.path.join(patient_dir, configs.REGISTERED_VOLUMES_DIR)
+    is_skip = replace_or_skip(reg_vol_dir, force_run)
+    if is_skip:
+        return
+
     NOPD, TS, GT_bladder_only, GT = flags
     params_dir = os.path.join(patient_dir, configs.REGISTER_PARAMS_DIR)
 
@@ -156,36 +154,46 @@ def start_registration(patient_dir, flags):
     else:
         print("GT Params file not created")
 
-def start_warp(patient_dir):
+def start_warp(patient_dir, force_run):
+    warps_dir = os.path.join(patient_dir, configs.WARPS_DIR)
+    is_skip = replace_or_skip(warps_dir, force_run)
+    if is_skip:
+        return
+
     patient_number, TS_roi_subset = get_roi_subset(patient_dir)
     input_dir = os.path.join(patient_dir, configs.GT_CONTOURS_DIR, configs.CBCT_DIR)
-    output_dir = os.path.join(patient_dir, configs.WARPS_DIR)
     vf_dir = os.path.join(patient_dir, configs.VF_VOLUMES_DIR)
-    if (str(patient_number) in configs.patients_with_GT):
+    ct_gt_contours_path = os.path.join(patient_dir, configs.GT_CONTOURS_DIR, configs.CT_DIR)
+
+    if (str(patient_number) in configs.patients_with_GT) and (os.path.exists(ct_gt_contours_path)):
         for segment in configs.GT_roi_subset:
             
             input = os.path.join(input_dir, f"{segment}.mha")
 
             # Warping the segment with VF_GT.nrrd
-            output = os.path.join(output_dir, f"{configs.WARP_PREFIX}{configs.GT}_{segment}")
+            output = os.path.join(warps_dir, f"{configs.WARP_PREFIX}{configs.GT}_{segment}")
             vf = os.path.join(vf_dir, f"{configs.VF_PREFIX}{configs.GT}.nrrd")
             warp(input, output, vf)
             
             # Warping the segment with VF_NOPD.nrrd
-            output = os.path.join(output_dir, f"{configs.WARP_PREFIX}{configs.NOPD}_{segment}")
+            output = os.path.join(warps_dir, f"{configs.WARP_PREFIX}{configs.NOPD}_{segment}")
             vf = os.path.join(vf_dir, f"{configs.VF_PREFIX}{configs.NOPD}.nrrd")
             warp(input, output, vf)
             
             # Warping the segment with VF_GT_bladder_only.nrrd
-            output = os.path.join(output_dir, f"{configs.WARP_PREFIX}{configs.GT_BLADDER_ONLY}_{segment}")
+            output = os.path.join(warps_dir, f"{configs.WARP_PREFIX}{configs.GT_BLADDER_ONLY}_{segment}")
             vf = os.path.join(vf_dir, f"{configs.VF_PREFIX}{configs.GT_BLADDER_ONLY}.nrrd")
             warp(input, output, vf)
-
+            
+            # Warping the segment with VF_TS.nrrd
+            output = os.path.join(warps_dir, f"{configs.WARP_PREFIX}{configs.TS}_{segment}")
+            vf = os.path.join(vf_dir, f"{configs.VF_PREFIX}{configs.TS}.nrrd")
+            warp(input, output, vf)
 
     for segment in TS_roi_subset:
         # Warping the segment with VF_TS.nrrd
         input = os.path.join(patient_dir, configs.LT_CBCT_SEG_DIR, f"{segment}.nii.gz")
-        output = os.path.join(output_dir, f"{configs.WARP_PREFIX}{segment}")
+        output = os.path.join(warps_dir, f"{configs.WARP_PREFIX}{configs.TS}_{segment}")
         vf = os.path.join(vf_dir, f"{configs.VF_PREFIX}{configs.TS}.nrrd")
         warp(input, output, vf)
 
@@ -193,6 +201,7 @@ def calculate_scores(patient_dir):
     results = {}
     warps_dir = os.path.join(patient_dir, configs.WARPS_DIR)
     _ , TS_roi_subset = get_roi_subset(patient_dir)
+
     for warp in glob(f"{warps_dir}/*"):
         class_name = get_class_name(warp)[3:]
         
@@ -226,9 +235,16 @@ def calculate_scores(patient_dir):
 def main(args):
     # args.force_run = True
     # args.patient_dirs = [
-    #     ".\datasets\pelvic_reference\Pelvic-Ref-003",
-    #     ".\datasets\pelvic_reference\Pelvic-Ref-004"
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-022",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-025",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-030",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-031",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-032",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-037",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-055",
+    #     ".\datasets\pelvic_reference\Pelvic-Ref-057"
     # ]
+    # args.patient_dirs = ".\datasets\pelvic_reference\Pel*"
     # for patient_dir in args.patient_dirs:
     for patient_dir in glob(args.patient_dirs):
         print("--------------------------------------------------------------------")
@@ -258,13 +274,13 @@ def main(args):
             # create_fcsvfile(patient_dir, args.force_run)
 
             # ## Registers params.txt file creation
-            # NOPD, TS, GT_bladder_only, GT = create_register_params(patient_dir)
+            # NOPD, TS, GT_bladder_only, GT = create_register_params(patient_dir, args.force_run)
 
             # ## Start regitration
-            # start_registration(patient_dir, (NOPD, TS, GT_bladder_only, GT))
+            # start_registration(patient_dir, (NOPD, TS, GT_bladder_only, GT), args.force_run)
             
             # ## Start warping
-            # start_warp(patient_dir)
+            # start_warp(patient_dir, args.force_run)
 
             ## Calculate scores
             calculate_scores(patient_dir)
@@ -274,15 +290,10 @@ def main(args):
             df.to_csv("hd.csv", index=False)
 
 
-        
         except Exception as e:
             print(f"Exception for patient: {patient_dir}")
             print(f"Error: {e}")
-        finally:
-            print("--------------------------------------------------------------------")
-            print(f"\t END: {patient_dir}")
-            print("--------------------------------------------------------------------")
-            
+
         # break
 
 configs = Configs()
