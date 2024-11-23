@@ -3,7 +3,7 @@ import shutil
 from config import Configs
 from evaluation.utils import get_patient_number
 
-def create_register_params_file(patient_dir, filename, segements=[]):
+def create_params_txt(patient_dir, filename, segements=[]):
     
     configs = Configs()
     patient_number = get_patient_number(patient_dir)

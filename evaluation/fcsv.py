@@ -62,9 +62,9 @@ def create_fcsv(cxt_filepath, fcsv_filepath, csv_filepath):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cxt_filepath", type=str, help="All patient dits in glob format")
-    parser.add_argument("--fcsv_filepath", type=str, help="All patient dits in glob format")
-    parser.add_argument("--csv_filepath", type=str, help="All patient dits in glob format")
+    parser.add_argument("--cxt", type=str, help="cxt filepath")
+    parser.add_argument("--fcsv", type=str, help="fcsv filepath")
+    parser.add_argument("--csv", type=str, help="csv filepath")
 
     args = parser.parse_args()
-    create_fcsv(args.cxt_filepath, args.fcsv_filepath, args.csv_filepath)
+    create_fcsv(args.cxt, args.fcsv, args.csv)

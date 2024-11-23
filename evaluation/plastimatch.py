@@ -36,8 +36,8 @@ def register(params_filepath):
     except subprocess.CalledProcessError as e:
         print(f"Error: Plastimatch register failed with error: {e}")
         
-def warp(input, output, vf):
-    command = f"plastimatch warp --input {input} --output-img {output}.mha --xf {vf}"
+def warp(input, output_cmd, output, vf):
+    command = f"plastimatch warp --input {input} --{output_cmd} {output} --xf {vf}"
     try:
         # subprocess.run(command, check=True)
         subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)

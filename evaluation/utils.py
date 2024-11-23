@@ -2,6 +2,8 @@ from config import Configs
 import re
 import os
 import shutil
+import csv
+import numpy as np
 
 def get_class_name(path):
     if configs.TS_PROSTATE_CLASS in path:
@@ -26,18 +28,23 @@ def get_roi_subset(patient_dir):
     return patient_number, roi_subset
 
 def replace_or_skip(dir, force):
-    
     if force and os.path.exists(dir):
         shutil.rmtree(dir)
-
     if os.path.exists(dir):
         print("skipping warps creation")
         return True
-    
     os.makedirs(dir, exist_ok=True)
-
     return False
 
+def get_coordinates(path):
+    with open(path,'r') as csvfile:
+        data = csv.reader(filter(lambda row: row[0]!='#', csvfile))
+        coord = None
+        for i in data:
+            curr = list(map(lambda x: float(x), i[1:4]))
+            coord = np.array(curr).reshape((1, 3)) if coord is None else np.vstack((coord, curr))
+        
+        return coord
 
 
 configs = Configs()

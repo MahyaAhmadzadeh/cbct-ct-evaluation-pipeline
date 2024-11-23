@@ -1,7 +1,7 @@
 import argparse
 from glob import glob
 from evaluation.plastimatch import *
-from evaluation.register_params import create_register_params_file
+from evaluation.params import create_register_params_file
 from totalsegmentator.python_api import totalsegmentator
 import os
 import shutil
