@@ -40,9 +40,13 @@ class Configs:
     VF_PREFIX = "VF_"
     WARP_PREFIX = "W_"
     AFFINE_TRANSFORM_FILENAME = "LinearTransform.txt"
+    PATIENT_NUM_KEY = "Patient #"
+    DICE_CSV_FILENAME = "dice.csv"
+    HD_CSV_FILENAME = "hd.csv"
+    FD_SEP_CSV_FILENAME = "fd-sep.csv"
 
     LUT = {
-            'patient_number': 'patient_number',
+            PATIENT_NUM_KEY: PATIENT_NUM_KEY,
             'Bladder - GT ALL | PD': 'W_GT_Bladder',
             'Prostate - GT ALL | PD': 'W_GT_Prostate',
             'Rectum - GT ALL | PD': 'W_GT_Rectum',

@@ -1,5 +1,4 @@
 import os
-import shutil
 from config import Configs
 from evaluation.utils import get_patient_number
 

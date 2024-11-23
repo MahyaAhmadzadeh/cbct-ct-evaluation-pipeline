@@ -32,7 +32,7 @@ class Evaluation:
         self.DSC_df = { v: [] for v in self.configs.LUT.keys() }
         self.HD_df =  { v: [] for v in self.configs.LUT.keys() }
         self.FD_SEP_df = {
-            "Patient #": [],
+            self.configs.PATIENT_NUM_KEY: [],
             self.configs.GT: [],
             self.configs.GT_BLADDER_ONLY: [],
             self.configs.NOPD: [],
@@ -61,8 +61,7 @@ class Evaluation:
         is_skip = replace_or_skip(dmaps_dir, self.force)
         if is_skip:
             return
-        
-        ltcbct_seg_path = os.path.join(self, patient_dir, self.configs.LT_CBCT_SEG_DIR)
+        ltcbct_seg_path = os.path.join(patient_dir, self.configs.LT_CBCT_SEG_DIR)
         cbct_gt_contours_path = os.path.join(patient_dir, self.configs.GT_CONTOURS_DIR, self.configs.CBCT_DIR)
         input_paths = glob(f"{ltcbct_seg_path}/*") + glob(f"{cbct_gt_contours_path}/*")
         for input_path in input_paths:
@@ -244,10 +243,10 @@ class Evaluation:
                 results[os.path.basename(warp)[:-4]] = ('None', 'None')
         
         patient_number = get_patient_number(patient_dir)
-        self.DSC_df["patient_number"].append(patient_number)
-        self.HD_df["patient_number"].append(patient_number)
+        self.DSC_df[self.configs.PATIENT_NUM_KEY].append(patient_number)
+        self.HD_df[self.configs.PATIENT_NUM_KEY].append(patient_number)
         for key in self.DSC_df.keys():
-            if key != "patient_number":
+            if key != self.configs.PATIENT_NUM_KEY:
                 lut_key = self.configs.LUT[key]
                 if lut_key in results:
                     self.DSC_df[key].append(results[lut_key][0])
@@ -259,34 +258,38 @@ class Evaluation:
     def calculate_fiducial_sep(self, patient_dir):
         ct_gt_contours_path = os.path.join(patient_dir, self.configs.GT_CONTOURS_DIR, self.configs.CT_DIR)
         patient_num = get_patient_number(patient_dir)
-        self.FD_SEP_df["Patient #"].append(patient_num)
+        self.FD_SEP_df[self.configs.PATIENT_NUM_KEY].append(patient_num)
         if (str(patient_num) in self.configs.patients_with_GT) and (os.path.exists(ct_gt_contours_path)):
             cbct_fdm = os.path.join(patient_dir, self.configs.FDMS_DIR, f"{patient_num}-{self.configs.CBCT_DIR}-fdm.fcsv")
             cbct_coord = get_coordinates(cbct_fdm)
             w_ct_fcsvs = os.path.join(patient_dir, self.configs.WARPS_DIR, configs.FCVS)
-            for fcsv in glob(f"{w_ct_fcsvs}/*"):
-                w_ct_coord = get_coordinates(fcsv)
-                mu_sep = np.sqrt(np.sum(np.square(cbct_coord - w_ct_coord), 1)).mean()
-                key = os.path.basename(fcsv).removeprefix(self.configs.WARP_PREFIX).removesuffix(f"_{patient_num}-{self.configs.CT_DIR}-fdm.fcsv")
-                self.FD_SEP_df[key].append(mu_sep)
+            for key in self.FD_SEP_df:
+                if key != self.configs.PATIENT_NUM_KEY:
+                    fcsv = os.path.join(w_ct_fcsvs, f"{self.configs.WARP_PREFIX}{key}_{patient_num}-{self.configs.CT_DIR}-fdm.fcsv")
+                    if os.path.exists(fcsv):
+                        w_ct_coord = get_coordinates(fcsv)
+                        mu_sep = np.sqrt(np.sum(np.square(cbct_coord - w_ct_coord), 1)).mean()
+                        key = os.path.basename(fcsv).removeprefix(self.configs.WARP_PREFIX).removesuffix(f"_{patient_num}-{self.configs.CT_DIR}-fdm.fcsv")
+                        self.FD_SEP_df[key].append(mu_sep)
+                    else:
+                        self.FD_SEP_df[key].append("inf")
+            print(f"Patient-{patient_num} fiducial separation calcualted")
         else:
             print(f"Patient-{patient_num} do not have fiducials")
             for key in self.FD_SEP_df.keys():
-                if key != "Patient #":
+                if key != self.configs.PATIENT_NUM_KEY:
                     self.FD_SEP_df[key].append("inf")
 
     def write_results(self):
         if self.metric:
             df = pd.DataFrame(self.DSC_df)
-            df.to_csv("dice.csv", index=False)
+            df.to_csv(self.configs.DICE_CSV_FILENAME, index=False)
             df = pd.DataFrame(self.HD_df)
-            df.to_csv("hd.csv", index=False)
+            df.to_csv(self.configs.HD_CSV_FILENAME, index=False)
         
         if self.fiducial_sep:
-            for key in self.FD_SEP_df:
-                print(key, len(self.FD_SEP_df[key]))
             df = pd.DataFrame(self.FD_SEP_df)
-            df.to_csv("fd-sep.csv", index=False)
+            df.to_csv(self.configs.FD_SEP_CSV_FILENAME, index=False)
 
     def evaluate(self):
         for patient_dir in self.data:
