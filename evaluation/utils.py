@@ -1,4 +1,4 @@
-from config import Configs
+from config import EvaluationConfig
 import re
 import os
 import shutil
@@ -47,4 +47,4 @@ def get_coordinates(path):
         return coord
 
 
-configs = Configs()
+configs = EvaluationConfig()

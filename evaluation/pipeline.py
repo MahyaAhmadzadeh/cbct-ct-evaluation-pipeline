@@ -1,16 +1,16 @@
 import argparse
 from glob import glob
-from evaluation.plastimatch import *
-from evaluation.params import create_params_txt
+from plastimatch import *
+from params import create_params_txt
 from totalsegmentator.python_api import totalsegmentator
 import os
-from evaluation.fcsv import create_fcsv
-from config import Configs
-from evaluation.utils import *
+from fcsv import create_fcsv
+from config import EvaluationConfig
+from utils import *
 import pandas as pd
 
 
-class Evaluation:
+class EvaluationPipeline:
     def __init__(self, data: str, force: bool=False, all: bool=False, seg: bool=False,
                  pw_linear: bool=False, dmap: bool=False, cxt: bool=False, fcsv: bool=False,
                  params: bool=False, register: bool=False, warp: bool=False, metric: bool=False,
@@ -28,7 +28,7 @@ class Evaluation:
         self.warp = warp
         self.metric = metric
         self.fiducial_sep = fiducial_sep
-        self.configs = Configs()
+        self.configs = EvaluationConfig()
         self.DSC_df = { v: [] for v in self.configs.LUT.keys() }
         self.HD_df =  { v: [] for v in self.configs.LUT.keys() }
         self.FD_SEP_df = {
@@ -38,8 +38,7 @@ class Evaluation:
             self.configs.NOPD: [],
             self.configs.TS: []
         }
-
-    
+  
     def segmentation(self, input_path, output_seg_path):
         is_skip = replace_or_skip(output_seg_path, self.force)
         if is_skip: return
@@ -376,7 +375,7 @@ if __name__=="__main__":
         nums = list(map(lambda x: int(x.strip())-1, nums))
         data = [data[i] for i in nums]
 
-    evaluation = Evaluation(data, args.force, args.all, args.seg, args.pw_linear,
+    evaluation = EvaluationPipeline(data, args.force, args.all, args.seg, args.pw_linear,
                             args.dmap, args.cxt, args.fcsv, args.params, args.register,
                             args.warp, args.metric, args.fiducial_sep)
     evaluation.evaluate()

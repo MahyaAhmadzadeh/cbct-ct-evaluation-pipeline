@@ -4,7 +4,7 @@ import os
 
 
 @dataclass
-class Configs:
+class EvaluationConfig:
     TS_PROSTATE_CLASS: str = "prostate"
     TS_BLADDER_CLASS: str = "urinary_bladder"
     GT_PROSTATE_CLASS: str = "Prostate"

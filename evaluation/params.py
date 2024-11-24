@@ -1,10 +1,10 @@
 import os
-from config import Configs
-from evaluation.utils import get_patient_number
+from config import EvaluationConfig
+from utils import get_patient_number
 
 def create_params_txt(patient_dir, filename, segements=[]):
     
-    configs = Configs()
+    configs = EvaluationConfig()
     patient_number = get_patient_number(patient_dir)
     affine_transform_txt = os.path.join(patient_dir, f"{patient_number}-{configs.AFFINE_TRANSFORM_FILENAME}")
     params_txt = os.path.join(patient_dir, configs.REGISTER_PARAMS_DIR, f"{filename}.txt")
