@@ -3,34 +3,33 @@ Evaluation pipleline for the CBCT to CT domain transfer using Cycle-GAN project.
 
 ## Folder Structure
 ```text
-datasets/
-└── pelvic_reference/
-    ├── Pelvic-Ref-001/              # Patient with GT contours
-    │   ├── CBCT/                    # Contains the CBCT DICOM files
-    │   ├── CT/                      # Contains the CT DICOM files
-    │   ├── FDMs/                    # Contains the Fiducial Distance Markup files (if available)
-    │   ├── GT_contours/             # Contains ground truth contours
-    │   │   ├── CT/                  # CT contours in .mha format
-    │   │   └── CBCT/                # CBCT contours in .mha format
-    │   └── 001-LinearTransform.txt  # Affine transform values from 3D Slicer
-    ├── Pelvic-Ref-002/              # Patient without GT contours
-    │   ├── CBCT/
-    │   ├── CT/
-    │   └── 002-LinearTransform.txt
-    └── ... (additional patient data folders)
-
-evaluation/
-├── __init__.py
-├── config.py
-├── fcsv.py
-├── params.py
-├── pipeline.py
-├── plastimatch.py
-└── util.py
-
-main.py
-requirements.txt
-README.md
+project/
+├── datasets/
+│   └── pelvic_reference/
+│       ├── Pelvic-Ref-001/              # Patient with GT contours
+│       │   ├── CBCT/                    # Contains the CBCT DICOM files
+│       │   ├── CT/                      # Contains the CT DICOM files
+│       │   ├── FDMs/                    # Contains the Fiducial Distance Markup files (if available)
+│       │   ├── GT_contours/             # Contains ground truth contours
+│       │   │   ├── CT/                  # CT contours in .mha format
+│       │   │   └── CBCT/                # CBCT contours in .mha format
+│       │   └── 001-LinearTransform.txt  # Affine transform values from 3D Slicer
+│       ├── Pelvic-Ref-002/              # Patient without GT contours
+│       │   ├── CBCT/
+│       │   ├── CT/
+│       │   └── 002-LinearTransform.txt
+│       └── ... (additional patient data folders)
+├── evaluation/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── fcsv.py
+│   ├── params.py
+│   ├── pipeline.py
+│   ├── plastimatch.py
+│   └── util.py
+├── main.py
+├── requirements.txt
+└── README.md
 ```
 ## Steps to Run the Code
 1. Create a new environment
