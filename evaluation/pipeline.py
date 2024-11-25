@@ -379,6 +379,8 @@ if __name__=="__main__":
     if args.nums:
         args.nums = list(filter(lambda x: len(x)!=0, args.nums.split(",")))
         args.nums = list(map(lambda x: int(x.strip())-1, args.nums))
+    else:
+        args.nums = []
 
     evaluation = EvaluationPipeline(data, args.force, args.nums, args.all, args.seg, args.pw_linear,
                             args.dmap, args.cxt, args.fcsv, args.params, args.register,
