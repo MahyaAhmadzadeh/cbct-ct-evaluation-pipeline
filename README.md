@@ -87,7 +87,7 @@ Example:
 2. For Python
    ```python
    nums = [] or [3, 4]   # Runs for all the patients if [] is passed
-   force = True
+   force = False
    all = True            # Runs all the steps if True
    seg = False
    pw_linear = False
@@ -99,6 +99,7 @@ Example:
    warp = False
    metric = False
    fiducial_sep = False
+   data = glob(os.path.join(os.path.curdir, "datasets", "pelvic_reference", "Pel*"))
    
    pipeline = EvaluationPipeline()
    pipeline.evaluate(data, force, nums, all, seg, pw_linear,
