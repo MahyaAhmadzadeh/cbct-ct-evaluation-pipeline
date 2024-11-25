@@ -28,6 +28,7 @@ evaluation/
 ├── plastimatch.py
 └── util.py
 
+main.py
 requirements.txt
 README.md
 ```
@@ -43,7 +44,7 @@ README.md
    ```
 3. Run the pipeline in terminal (-d argument should be in glob format)
    ```bash
-   python evaluation/pipeline.py -d ./datasets/pelvic_reference/Pel*
+   python main.py -d ./datasets/pelvic_reference/Pel*
    ```
 4. Run the pipeline from code
    ```python
@@ -58,7 +59,7 @@ README.md
 ## Evaluation Pipeline Arguments
 1. For Terminal
   ```text
-usage: pipeline.py [-h] [-d] [-n] [-f] [-a] [-s] [-pw] [-dm] [-c] [-fc] [-p] [-r] [-w] [-m] [-fs]
+usage: main.py [-h] [-d] [-n] [-f] [-a] [-s] [-pw] [-dm] [-c] [-fc] [-p] [-r] [-w] [-m] [-fs]
 
 options:
   -h, --help            show this help message and exit
@@ -79,10 +80,10 @@ options:
 ```
 Example:
 ```bash
-  1. python evaluation/pipeline.py -d ./datasets/pelvic_reference/Pel* -f -n 3,4 -a        # Force runs all the steps for patients 3 and 4
-  2. python evaluation/pipeline.py -d ./datasets/pelvic_reference/Pel* -f -n 3,4 -s -pw    # Force runs the segmentation and pw-linear transform steps for patients 3 and 4
-  3. python evaluation/pipeline.py -d ./datasets/pelvic_reference/Pel* -f -s -pw           # Force runs the segmentation and pw-linear transform steps for all the patients
-  3. python evaluation/pipeline.py -d ./datasets/pelvic_reference/Pel* -s -pw              # Initates the segmentation and pw-linear transform steps for all the patients, but skips if the result is already present
+  1. python main.py -d ./datasets/pelvic_reference/Pel* -f -n 3,4 -a        # Force runs all the steps for patients 3 and 4
+  2. python main.py -d ./datasets/pelvic_reference/Pel* -f -n 3,4 -s -pw    # Force runs the segmentation and pw-linear transform steps for patients 3 and 4
+  3. python main.py -d ./datasets/pelvic_reference/Pel* -f -s -pw           # Force runs the segmentation and pw-linear transform steps for all the patients
+  3. python main.py -d ./datasets/pelvic_reference/Pel* -s -pw              # Initates the segmentation and pw-linear transform steps for all the patients, but skips if the result is already present
   ```
 2. For Python
    ```python
