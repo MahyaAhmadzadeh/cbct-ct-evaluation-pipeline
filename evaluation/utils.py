@@ -35,7 +35,7 @@ class Utils:
         if force and os.path.exists(dir):
             shutil.rmtree(dir)
         if os.path.exists(dir):
-            print("skipping warps creation")
+            print("skipping result creation")
             return True
         os.makedirs(dir, exist_ok=True)
         return False

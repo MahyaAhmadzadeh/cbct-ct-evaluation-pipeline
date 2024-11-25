@@ -1,38 +1,17 @@
-import argparse
 from glob import glob
 from typing import List
-from params import create_params_txt
+from evaluation.params import create_params_txt
 from totalsegmentator.python_api import totalsegmentator
 import os
-from fcsv import create_fcsv
-from plastimatch import Plastimatch
-from config import EvaluationConfig
-from utils import Utils
+from evaluation.fcsv import create_fcsv
+from evaluation.plastimatch import Plastimatch
+from evaluation.config import EvaluationConfig
+from evaluation.utils import Utils
 import pandas as pd
 import numpy as np
 
-
 class EvaluationPipeline:
-    def __init__(self, data: str, force: bool=False, nums: List[int]=[], all: bool=False, seg: bool=False,
-                 pw_linear: bool=False, dmap: bool=False, cxt: bool=False, fcsv: bool=False,
-                 params: bool=False, register: bool=False, warp: bool=False, metric: bool=False,
-                 fiducial_sep: bool=False) -> None:
-        if len(nums)==0:
-            self.data = data
-        else:
-            self.data = [data[i] for i in nums]
-        self.force = force
-        self.all = all
-        self.seg = seg
-        self.pw_linear = pw_linear
-        self.dmap = dmap
-        self.cxt = cxt
-        self.fcsv = fcsv
-        self.params = params
-        self.register = register
-        self.warp = warp
-        self.metric = metric
-        self.fiducial_sep = fiducial_sep
+    def __init__(self) -> None:
         self.configs = EvaluationConfig()
         self.DSC_df = { v: [] for v in self.configs.LUT.keys() }
         self.HD_df =  { v: [] for v in self.configs.LUT.keys() }
@@ -46,25 +25,25 @@ class EvaluationPipeline:
         self._plastimatch = Plastimatch()
         self._utils = Utils(self.configs)
   
-    def segmentation(self, input_path, output_seg_path):
-        is_skip = self._utils.replace_or_skip(output_seg_path, self.force)
+    def segmentation(self, input_path, output_seg_path, force):
+        is_skip = self._utils.replace_or_skip(output_seg_path, force)
         if is_skip: return
 
-        _, roi_subset = self._utils.get_roi_subset(input_path)
+        _, roi_subset = self._utils.get_roi_subset(input_path, force)
         totalsegmentator(input_path, output_seg_path, roi_subset=roi_subset)
     
-    def pw_linear_transformation(self, patient_dir):
+    def pw_linear_transformation(self, patient_dir, force):
         ltcbct_path = os.path.join(patient_dir, self.configs.LT_CBCT_DIR)
-        is_skip = self._utils.replace_or_skip(ltcbct_path, self.force)
+        is_skip = self._utils.replace_or_skip(ltcbct_path, force)
         if is_skip: return
         
-        cbct_path =  os.path.join(patient_dir, self.configs.CBCT_DIR)
+        cbct_path =  os.path.join(patient_dir, self.configs.CBCT_DIR, force)
         self._plastimatch.pw_linear_transform(cbct_path, ltcbct_path)
         self._plastimatch.convert("input", f"{ltcbct_path}.nrrd", "output-dicom", ltcbct_path)
 
-    def dmap_calcualtion(self, patient_dir):
+    def dmap_calcualtion(self, patient_dir, force):
         dmaps_dir = os.path.join(patient_dir, self.configs.DMAPS_DIR)
-        is_skip = self._utils.replace_or_skip(dmaps_dir, self.force)
+        is_skip = self._utils.replace_or_skip(dmaps_dir, force)
         if is_skip:
             return
         ltcbct_seg_path = os.path.join(patient_dir, self.configs.LT_CBCT_SEG_DIR)
@@ -76,9 +55,9 @@ class EvaluationPipeline:
                 output_path = os.path.join(dmaps_dir, f"{class_name}.mha")
                 self._plastimatch.dmap(input_path, output_path)
 
-    def cxt_conversion(self, patient_dir):
+    def cxt_conversion(self, patient_dir, force):
         cxts_dir = os.path.join(patient_dir, self.configs.CXTS_DIR)
-        is_skip = self._utils.replace_or_skip(cxts_dir, self.force)
+        is_skip = self._utils.replace_or_skip(cxts_dir, force)
         if is_skip:
             return
         
@@ -91,9 +70,9 @@ class EvaluationPipeline:
                 output_path = os.path.join(cxts_dir, f"{class_name}.cxt")
                 self._plastimatch.convert("input-ss-img", input_path, "output-cxt", output_path)
 
-    def create_fcsvfile(self, patient_dir):
+    def create_fcsvfile(self, patient_dir, force):
         fcsvs_dir = os.path.join(patient_dir, self.configs.FCVS_DIR)
-        is_skip = self._utils.replace_or_skip(fcsvs_dir, self.force)
+        is_skip = self._utils.replace_or_skip(fcsvs_dir, force)
         if is_skip:
             return
         
@@ -104,14 +83,15 @@ class EvaluationPipeline:
             csv_filepath = os.path.join(fcsvs_dir, f"{class_name}.csv")
             create_fcsv(cxt_filepath, fcsv_filepath, csv_filepath)
 
-    def create_register_params(self, patient_dir):
-        reg_params_dir = os.path.join(patient_dir, self.configs.REGISTER_PARAMS_DIR)
-        is_skip = self._utils.replace_or_skip(reg_params_dir, self.force)
-        if is_skip:
-            return
-        
+    def create_register_params(self, patient_dir, force):
         # Flags to keep track of the register params file created
         NOPD, TS, GT_bladder_only, GT = False, False, False, False
+
+        reg_params_dir = os.path.join(patient_dir, self.configs.REGISTER_PARAMS_DIR)
+        is_skip = self._utils.replace_or_skip(reg_params_dir, force)
+        if is_skip:
+            return (NOPD, TS, GT_bladder_only, GT)
+        
         patient_number, TS_roi_subset = self._utils.get_roi_subset(patient_dir)
         
         NOPD = create_params_txt(patient_dir, self.configs.NOPD)
@@ -145,10 +125,10 @@ class EvaluationPipeline:
 
         return (NOPD, TS, GT_bladder_only, GT)
 
-    def start_registration(self, patient_dir, flags):
+    def start_registration(self, patient_dir, flags, force):
         
         reg_vol_dir = os.path.join(patient_dir, self.configs.REGISTERED_VOLUMES_DIR)
-        is_skip = self._utils.replace_or_skip(reg_vol_dir, self.force)
+        is_skip = self._utils.replace_or_skip(reg_vol_dir, force)
         if is_skip:
             return
 
@@ -179,9 +159,9 @@ class EvaluationPipeline:
         else:
             print("GT Params file not created")
 
-    def start_warp(self, patient_dir):
+    def start_warp(self, patient_dir, force):
         warps_dir = os.path.join(patient_dir, self.configs.WARPS_DIR)
-        is_skip = self._utils.replace_or_skip(warps_dir, self.force)
+        is_skip = self._utils.replace_or_skip(warps_dir, force)
         if is_skip: return
 
         warps_seg_dir = os.path.join(warps_dir, self.configs.SEGMENTS)
@@ -230,6 +210,7 @@ class EvaluationPipeline:
             self._plastimatch.warp(input, "output-img", output, vf)
 
     def calculate_scores(self, patient_dir):
+
         results = {}
         warps_dir = os.path.join(patient_dir, self.configs.WARPS_DIR, self.configs.SEGMENTS)
         _ , TS_roi_subset = self._utils.get_roi_subset(patient_dir)
@@ -286,103 +267,75 @@ class EvaluationPipeline:
                 if key != self.configs.PATIENT_NUM_KEY:
                     self.FD_SEP_df[key].append("inf")
 
-    def write_results(self):
-        if self.metric:
+    def write_results(self, metric, fiducial_sep):
+        if metric:
             df = pd.DataFrame(self.DSC_df)
             df.to_csv(self.configs.DICE_CSV_FILENAME, index=False)
             df = pd.DataFrame(self.HD_df)
             df.to_csv(self.configs.HD_CSV_FILENAME, index=False)
         
-        if self.fiducial_sep:
+        if fiducial_sep:
             df = pd.DataFrame(self.FD_SEP_df)
             df.to_csv(self.configs.FD_SEP_CSV_FILENAME, index=False)
 
-    def evaluate(self):
-        for patient_dir in self.data:
+    def evaluate(self, data: str, force: bool=False, nums: List[int]=[], all: bool=False, seg: bool=False,
+                 pw_linear: bool=False, dmap: bool=False, cxt: bool=False, fcsv: bool=False,
+                 params: bool=False, register: bool=False, warp: bool=False, metric: bool=False,
+                 fiducial_sep: bool=False):
+        
+        data = data if len(nums)==0 else [data[i] for i in nums]
+        for patient_dir in data:
             print("--------------------------------------------------------------------")
             print(f"\t START: {patient_dir}")
             print("--------------------------------------------------------------------")
             try:
                 ## Linear tranform of CBCT
-                if self.all or self.pw_linear:
-                    self.pw_linear_transformation(patient_dir)
+                if all or pw_linear:
+                    self.pw_linear_transformation(patient_dir, force)
 
-                ## Segmenting the LTCBCT
-                if self.all or self.seg:
+                ## Segmenting the LTCBCT and the CT
+                if all or seg:
                     ltcbct_path = os.path.join(patient_dir, self.configs.LT_CBCT_DIR)
                     ltcbct_seg_path = os.path.join(patient_dir, self.configs.LT_CBCT_SEG_DIR)
-                    self.segmentation(ltcbct_path, ltcbct_seg_path)
-                
-                ## Segmenting the CT
-                if self.all or self.seg:
+                    self.segmentation(ltcbct_path, ltcbct_seg_path, force)
+
                     ct_path = os.path.join(patient_dir, self.configs.CT_DIR)
                     ct_seg_path = os.path.join(patient_dir, self.configs.CT_SEG_DIR)
-                    self.segmentation(ct_path, ct_seg_path)
+                    self.segmentation(ct_path, ct_seg_path, force)
 
                 ## LT_CBCT dmap calculation from the LTCBCT TS masks and CBCT GT masks
-                if self.all or self.dmap:
-                    self.dmap_calcualtion(patient_dir)
+                if all or dmap:
+                    self.dmap_calcualtion(patient_dir, force)
 
                 ## CT cxt creation from the CT TS and GT masks
-                if self.all or self.cxt:
-                    self.cxt_conversion(patient_dir)
+                if all or cxt:
+                    self.cxt_conversion(patient_dir, force)
 
                 ## fcsv files creation
-                if self.all or self.fcsv:
-                    self.create_fcsvfile(patient_dir)
+                if all or fcsv:
+                    self.create_fcsvfile(patient_dir, force)
 
                 ## Registers params.txt file creation
-                if self.all or self.params:
-                    NOPD, TS, GT_bladder_only, GT = self.create_register_params(patient_dir)
+                if all or params:
+                    NOPD, TS, GT_bladder_only, GT = self.create_register_params(patient_dir, force)
 
                 ## Start regitration
-                if self.all or self.register:
-                    self.start_registration(patient_dir, (NOPD, TS, GT_bladder_only, GT))
+                if all or register:
+                    self.start_registration(patient_dir, (NOPD, TS, GT_bladder_only, GT), force)
                 
                 ## Start warping
-                if self.all or self.warp:
-                    self.start_warp(patient_dir)
+                if all or warp:
+                    self.start_warp(patient_dir, force)
 
                 ## Calculate scores
-                if self.all or self.metric:
+                if all or metric:
                     self.calculate_scores(patient_dir)
                     
                 ## Calculate scores
-                if self.all or self.fiducial_sep:
+                if all or fiducial_sep:
                     self.calculate_fiducial_sep(patient_dir)
             except Exception as e:
                 print(f"Exception for patient: {patient_dir}")
                 print(f"Error: {e}")
 
-        self.write_results()
-
-if __name__=="__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data", type=str, help="All patient dirs in glob format")
-    parser.add_argument("-n", "--nums", type=str, help="patient numbers to process (in csv format)")
-    parser.add_argument("-f", "--force", action='store_true', help="force run")
-    parser.add_argument("-a", "--all", action='store_true', help="run all the steps")
-    parser.add_argument("-s", "--seg", action='store_true', help="run segmentation")
-    parser.add_argument("-pw", "--pw-linear", action='store_true', help="run pw-linear transformation")
-    parser.add_argument("-dm", "--dmap", action='store_true', help="run dmap calculation")
-    parser.add_argument("-c", "--cxt", action='store_true', help="run cxt conversion")
-    parser.add_argument("-fc", "--fcsv", action='store_true', help="run fcsv creation")
-    parser.add_argument("-p", "--params", action='store_true', help="run register params.txt creation")
-    parser.add_argument("-r", "--register", action='store_true', help="run plastimatch register")
-    parser.add_argument("-w", "--warp", action='store_true', help="run warp")
-    parser.add_argument("-m", "--metric", action='store_true', help="calculate scores")
-    parser.add_argument("-fs", "--fiducial-sep", action='store_true', help="calculate fiducial distance")
-
-    args = parser.parse_args()
-    data =  glob(args.data)
-    print(args)
-    if args.nums:
-        args.nums = list(filter(lambda x: len(x)!=0, args.nums.split(",")))
-        args.nums = list(map(lambda x: int(x.strip())-1, args.nums))
-    else:
-        args.nums = []
-
-    evaluation = EvaluationPipeline(data, args.force, args.nums, args.all, args.seg, args.pw_linear,
-                            args.dmap, args.cxt, args.fcsv, args.params, args.register,
-                            args.warp, args.metric, args.fiducial_sep)
-    evaluation.evaluate()
+        self.write_results(metric, fiducial_sep)

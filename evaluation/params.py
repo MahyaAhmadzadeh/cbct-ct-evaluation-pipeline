@@ -1,6 +1,6 @@
 import os
-from config import EvaluationConfig
-from utils import Utils
+from evaluation.config import EvaluationConfig
+from evaluation.utils import Utils
 
 def create_params_txt(patient_dir, filename, segements=[]):
     
