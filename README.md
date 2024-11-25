@@ -2,6 +2,8 @@
 Evaluation pipleline for the CBCT to CT domain transfer using Cycle-GAN project. Uses Plastimatch to do all the necessary functions and finally calculates the Dice Similaruty Score, Hausdorff Distance and the Euclidean distance of the fiducial markers. This project utilizes [Plastimatch](https://plastimatch.org/), [TotalSegmentor](https://github.com/wasserth/TotalSegmentator), [3D Slicer](https://www.slicer.org/).
 
 ## Folder Structure
+Copy the {patient-number}-LinearTransforms.txt file from the LinearTransforms folder to the respective Patient folders and make sure the project structure look likes this before proceeding.
+
 ```text
 project/
 ├── datasets/
