@@ -1,5 +1,5 @@
-## ct-cbct-evaluation-pipeline
-Evaluation pipleline for the CBCT to CT domain transfer using Cycle-GAN project. Uses Plastimatch to do all the necessary functions and finally calculates the Dice Similaruty Score, Hausdorff Distance and the Euclidean distance of the fiducial markers.
+## Cycle-GAN CBCT-CT Evaluation Pipeline
+Evaluation pipleline for the CBCT to CT domain transfer using Cycle-GAN project. Uses Plastimatch to do all the necessary functions and finally calculates the Dice Similaruty Score, Hausdorff Distance and the Euclidean distance of the fiducial markers. This project utilizes [Plastimatch](https://plastimatch.org/), [TotalSegmentor](https://github.com/wasserth/TotalSegmentator), [3D Slicer](https://www.slicer.org/).
 
 ## Folder Structure
 ```text
@@ -105,3 +105,9 @@ Example:
                         dmap, cxt, fcsv, params, register,
                         warp, metric, fiducial_sep)
    ```
+
+## References
+1. [Plastimatch](https://plastimatch.org/)
+2. [TotalSegmentator](https://github.com/wasserth/TotalSegmentator)
+
+---
