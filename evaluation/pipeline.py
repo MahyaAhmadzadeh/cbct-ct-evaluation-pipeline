@@ -29,7 +29,7 @@ class EvaluationPipeline:
         is_skip = self._utils.replace_or_skip(output_seg_path, force)
         if is_skip: return
 
-        _, roi_subset = self._utils.get_roi_subset(input_path, force)
+        _, roi_subset = self._utils.get_roi_subset(input_path)
         totalsegmentator(input_path, output_seg_path, roi_subset=roi_subset)
     
     def pw_linear_transformation(self, patient_dir, force):
@@ -37,7 +37,7 @@ class EvaluationPipeline:
         is_skip = self._utils.replace_or_skip(ltcbct_path, force)
         if is_skip: return
         
-        cbct_path =  os.path.join(patient_dir, self.configs.CBCT_DIR, force)
+        cbct_path =  os.path.join(patient_dir, self.configs.CBCT_DIR)
         self._plastimatch.pw_linear_transform(cbct_path, ltcbct_path)
         self._plastimatch.convert("input", f"{ltcbct_path}.nrrd", "output-dicom", ltcbct_path)
 

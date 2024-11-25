@@ -1,4 +1,1 @@
-numpy==1.26.4
 TotalSegmentator==2.4.0
-torch==2.5.1+cu124
-torchvision==0.20.1+cu124
