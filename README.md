@@ -37,15 +37,21 @@ project/
    conda create --name eval-pipeline python=3.10
    conda activate eval-pipeline
    ```
+   
+
 2. Install the dependencies
-   ```bash
-   pip install -r requirements.txt
+   
+   a. **Install PyTorch** - [PyTorch Installation](https://pytorch.org/get-started/locally/).  
+   
+   b. **Install the Remaining Dependencies** 
+      ```bash
+      pip install -r requirements.txt
    ```
-3. Run the pipeline in terminal (-d argument should be in glob format)
+4. Run the pipeline in terminal (-d argument should be in glob format)
    ```bash
    python main.py -d ./datasets/pelvic_reference/Pel*
    ```
-4. Run the pipeline from code
+5. Run the pipeline from code
    ```python
    from evaluation.pipeline import EvaluationPipeline
    from glob import glob
