@@ -24,14 +24,8 @@ class EvaluationPipeline:
         }
         self._plastimatch = Plastimatch()
         self._utils = Utils(self.configs)
-  
-    def segmentation(self, input_path, output_seg_path, force):
-        is_skip = self._utils.replace_or_skip(output_seg_path, force)
-        if is_skip: return
 
-        _, roi_subset = self._utils.get_roi_subset(input_path)
-        totalsegmentator(input_path, output_seg_path, roi_subset=roi_subset)
-    
+
     def pw_linear_transformation(self, patient_dir, force):
         ltcbct_path = os.path.join(patient_dir, self.configs.LT_CBCT_DIR)
         is_skip = self._utils.replace_or_skip(ltcbct_path, force)
@@ -40,6 +34,15 @@ class EvaluationPipeline:
         cbct_path =  os.path.join(patient_dir, self.configs.CBCT_DIR)
         self._plastimatch.pw_linear_transform(cbct_path, ltcbct_path)
         self._plastimatch.convert("input", f"{ltcbct_path}.nrrd", "output-dicom", ltcbct_path)
+
+    def segmentation(self, input_path, output_seg_path, force):
+        is_skip = self._utils.replace_or_skip(output_seg_path, force)
+        if is_skip: return
+
+        _, roi_subset = self._utils.get_roi_subset(input_path)
+        totalsegmentator(input_path, output=output_seg_path, roi_subset=roi_subset)
+        for nifti_file_path in glob(f"{output_seg_path}/*"):
+            self._utils.convert_nifti_to_nrrd(nifti_file_path)
 
     def dmap_calcualtion(self, patient_dir, force):
         dmaps_dir = os.path.join(patient_dir, self.configs.DMAPS_DIR)
@@ -189,25 +192,32 @@ class EvaluationPipeline:
                 vf = os.path.join(vf_dir, f"{self.configs.VF_PREFIX}{self.configs.GT_BLADDER_ONLY}.nrrd")
                 self._plastimatch.warp(input, "output-img", output, vf)
                 
-                # Warping the segment with VF_TS.nrrd
-                output = os.path.join(warps_seg_dir, f"{self.configs.WARP_PREFIX}{self.configs.TS}_{segment}.mha")
-                vf = os.path.join(vf_dir, f"{self.configs.VF_PREFIX}{self.configs.TS}.nrrd")
-                self._plastimatch.warp(input, "output-img", output, vf)
+                try:
+                    # Warping the segment with VF_TS.nrrd
+                    output = os.path.join(warps_seg_dir, f"{self.configs.WARP_PREFIX}{self.configs.TS}_{segment}.mha")
+                    vf = os.path.join(vf_dir, f"{self.configs.VF_PREFIX}{self.configs.TS}.nrrd")
+                    self._plastimatch.warp(input, "output-img", output, vf)
+                except Exception as e:
+                    print(e)
+
             
             # Warping for fiducial markers
-            filename = f"{patient_number}-{self.configs.CT_DIR}-fdm.fcsv"
+            filename = f"{patient_number}-{self.configs.CBCT_DIR}-fdm.fcsv"
             input = os.path.join(patient_dir, self.configs.FDMS_DIR, filename)
             for vf in glob(f"{vf_dir}/*"):
                 output = os.path.basename(vf).removeprefix(self.configs.VF_PREFIX).removesuffix('.nrrd')
                 output = os.path.join(warps_dir, self.configs.FCVS, f"{self.configs.WARP_PREFIX}{output}_{filename}")
                 self._plastimatch.warp(input, "output-pointset", output, vf)
 
-        for segment in TS_roi_subset:
-            # Warping the segment with VF_TS.nrrd
-            input = os.path.join(patient_dir, self.configs.LT_CBCT_SEG_DIR, f"{segment}.nii.gz")
-            output = os.path.join(warps_seg_dir, f"{self.configs.WARP_PREFIX}{self.configs.TS}_{segment}.mha")
-            vf = os.path.join(vf_dir, f"{self.configs.VF_PREFIX}{self.configs.TS}.nrrd")
-            self._plastimatch.warp(input, "output-img", output, vf)
+        try:
+            for segment in TS_roi_subset:
+                # Warping the segment with VF_TS.nrrd
+                input = os.path.join(patient_dir, self.configs.LT_CBCT_SEG_DIR, f"{segment}.nrrd")
+                output = os.path.join(warps_seg_dir, f"{self.configs.WARP_PREFIX}{self.configs.TS}_{segment}.mha")
+                vf = os.path.join(vf_dir, f"{self.configs.VF_PREFIX}{self.configs.TS}.nrrd")
+                self._plastimatch.warp(input, "output-img", output, vf)
+        except Exception as e:
+            print(e)
 
     def calculate_scores(self, patient_dir):
 
@@ -217,7 +227,7 @@ class EvaluationPipeline:
         for warp in glob(f"{warps_dir}/*"):
             class_name = self._utils.get_class_name(warp)[3:]
             if class_name in TS_roi_subset:
-                segment = os.path.join(patient_dir, self.configs.CT_SEG_DIR, f"{class_name}.nii.gz")
+                segment = os.path.join(patient_dir, self.configs.CT_SEG_DIR, f"{class_name}.nrrd")
             else:
                 segment = os.path.join(patient_dir, self.configs.GT_CONTOURS_DIR, self.configs.CT_DIR, f"{class_name}.mha")
             result = self._plastimatch.dice(segment, warp)
@@ -247,16 +257,16 @@ class EvaluationPipeline:
         patient_num = self._utils.get_patient_number(patient_dir)
         self.FD_SEP_df[self.configs.PATIENT_NUM_KEY].append(patient_num)
         if (str(patient_num) in self.configs.patients_with_GT) and (os.path.exists(ct_gt_contours_path)):
-            cbct_fdm = os.path.join(patient_dir, self.configs.FDMS_DIR, f"{patient_num}-{self.configs.CBCT_DIR}-fdm.fcsv")
-            cbct_coord = self._utils.get_coordinates(cbct_fdm)
-            w_ct_fcsvs = os.path.join(patient_dir, self.configs.WARPS_DIR, self.configs.FCVS)
+            ct_fdm = os.path.join(patient_dir, self.configs.FDMS_DIR, f"{patient_num}-{self.configs.CT_DIR}-fdm.fcsv")
+            ct_coord = self._utils.get_coordinates(ct_fdm)
+            w_fcsvs_dir = os.path.join(patient_dir, self.configs.WARPS_DIR, self.configs.FCVS)
             for key in self.FD_SEP_df:
                 if key != self.configs.PATIENT_NUM_KEY:
-                    fcsv = os.path.join(w_ct_fcsvs, f"{self.configs.WARP_PREFIX}{key}_{patient_num}-{self.configs.CT_DIR}-fdm.fcsv")
-                    if os.path.exists(fcsv):
-                        w_ct_coord = self._utils.get_coordinates(fcsv)
-                        mu_sep = np.sqrt(np.sum(np.square(cbct_coord - w_ct_coord), 1)).mean() # Euclidean distance
-                        key = os.path.basename(fcsv).removeprefix(self.configs.WARP_PREFIX).removesuffix(f"_{patient_num}-{self.configs.CT_DIR}-fdm.fcsv")
+                    w_cbct_fcsv = os.path.join(w_fcsvs_dir, f"{self.configs.WARP_PREFIX}{key}_{patient_num}-{self.configs.CBCT_DIR}-fdm.fcsv")
+                    if os.path.exists(w_cbct_fcsv):
+                        w_cbct_coord = self._utils.get_coordinates(w_cbct_fcsv)
+                        mu_sep = np.sqrt(np.sum(np.square(w_cbct_coord - ct_coord), 1)).mean() # Euclidean distance
+                        key = os.path.basename(w_cbct_fcsv).removeprefix(self.configs.WARP_PREFIX).removesuffix(f"_{patient_num}-{self.configs.CBCT_DIR}-fdm.fcsv")
                         self.FD_SEP_df[key].append(mu_sep)
                     else:
                         self.FD_SEP_df[key].append("inf")
@@ -267,14 +277,14 @@ class EvaluationPipeline:
                 if key != self.configs.PATIENT_NUM_KEY:
                     self.FD_SEP_df[key].append("inf")
 
-    def write_results(self, metric, fiducial_sep):
-        if metric:
+    def write_results(self, all, metric, fiducial_sep):
+        if all or metric:
             df = pd.DataFrame(self.DSC_df)
             df.to_csv(self.configs.DICE_CSV_FILENAME, index=False)
             df = pd.DataFrame(self.HD_df)
             df.to_csv(self.configs.HD_CSV_FILENAME, index=False)
         
-        if fiducial_sep:
+        if all or fiducial_sep:
             df = pd.DataFrame(self.FD_SEP_df)
             df.to_csv(self.configs.FD_SEP_CSV_FILENAME, index=False)
 
@@ -338,4 +348,4 @@ class EvaluationPipeline:
                 print(f"Exception for patient: {patient_dir}")
                 print(f"Error: {e}")
 
-        self.write_results(metric, fiducial_sep)
+        self.write_results(all, metric, fiducial_sep)

@@ -7,7 +7,7 @@ def create_params_txt(patient_dir, filename, segements=[]):
     configs = EvaluationConfig()
     utils = Utils(configs)
     patient_number = utils.get_patient_number(patient_dir)
-    affine_transform_txt = os.path.join(patient_dir, f"{patient_number}-{configs.AFFINE_TRANSFORM_FILENAME}")
+    # affine_transform_txt = os.path.join(patient_dir, f"{patient_number}-{configs.AFFINE_TRANSFORM_FILENAME}")
     params_txt = os.path.join(patient_dir, configs.REGISTER_PARAMS_DIR, f"{filename}.txt")
     img_out = os.path.join(patient_dir, configs.REGISTERED_VOLUMES_DIR, f"{filename}.nrrd")
     vf_out = os.path.join(patient_dir, configs.VF_VOLUMES_DIR, f"{configs.VF_PREFIX}{filename}.nrrd")
@@ -45,8 +45,8 @@ res=3 3 1
     
     global_params += f"""default_value=-1000
 img_out={img_out}
-vf_out={vf_out}
-xform_in={affine_transform_txt}\n\n"""
+vf_out={vf_out}\n\n"""
+#xform_in={affine_transform_txt}\n\n"""
     
     metric_params = "[STAGE]\n"
     for i in range(len(total_segements)):

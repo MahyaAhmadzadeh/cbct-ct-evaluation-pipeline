@@ -38,6 +38,7 @@ class Plastimatch:
             
     def warp(self, input, output_cmd, output, vf):
         command = f"plastimatch warp --input {input} --{output_cmd} {output} --xf {vf}"
+        print(command)
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch warp completed successfully.")
