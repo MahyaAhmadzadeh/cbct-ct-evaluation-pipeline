@@ -5,6 +5,7 @@ import csv
 import numpy as np
 import nrrd
 import nibabel as nib
+import SimpleITK as sitk
 
 class Utils:
 
@@ -53,24 +54,13 @@ class Utils:
             return coord
     
     def convert_nifti_to_nrrd(self, nifti_file_path):
-        # Load the NIfTI file
-        nifti_image = nib.load(nifti_file_path)
-        data = nifti_image.get_fdata()  # Extract the image data as a NumPy array
-        header = nifti_image.header
-        affine = nifti_image.affine
-
-        # Prepare metadata for NRRD
-        metadata = {
-            "space directions": list(affine[:3, :3]),  # Get spatial transformation matrix
-            "space origin": list(affine[:3, 3]),  # Get spatial origin
-            "space": "left-posterior-superior"  # Common space specification for medical images
-        }
-        # Add header details to metadata
-        metadata.update({f"key_{k}": v for k, v in header.items()})
-
-        # Save as NRRD
-        nrrd_file_path = os.path.join(os.path.dirname(nifti_file_path), f"{os.path.basename(nifti_file_path).removesuffix('.nii.gz')}.nrrd")
-        nrrd.write(nrrd_file_path, data.astype(np.uint8), metadata)
-        print(f"Saved .nrrd: {nrrd_file_path}")
-        os.remove(nifti_file_path)
-        print(f"Removed nifti: {nifti_file_path}")
+        try:
+            nifti_image = sitk.ReadImage(nifti_file_path)
+            nrrd_file_path = os.path.join(os.path.dirname(nifti_file_path), f"{os.path.basename(nifti_file_path).removesuffix('.nii.gz')}.nrrd")
+            sitk.WriteImage(nifti_image, nrrd_file_path)
+            print(f"Saved .nrrd: {nrrd_file_path}")
+            os.remove(nifti_file_path)
+            print(f"Removed nifti: {nifti_file_path}")
+        except Exception as e:
+            print("Nifti to .nrrd conversion failed")
+        

@@ -13,7 +13,7 @@ class Plastimatch:
             print(f"Error: Plastimatch convert failed with error: {e}")
 
     def pw_linear_transform(self, input_path, output_path):
-        command = f"plastimatch adjust --input {input_path} --pw-linear \"-1024, -1024, -200, 80, -120, 40, 600, 1300\" --output {output_path}.nrrd"
+        command = f"plastimatch adjust --input {input_path} --pw-linear \"-1024, -1024, -200, -80, -120, 40, 600, 1300\" --output {output_path}.nrrd"
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch adjustment completed successfully.")
