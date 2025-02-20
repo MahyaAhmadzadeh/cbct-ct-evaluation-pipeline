@@ -41,9 +41,11 @@ class EvaluationConfig:
     WARP_PREFIX = "W_"
     AFFINE_TRANSFORM_FILENAME = "LinearTransform.txt"
     PATIENT_NUM_KEY = "Patient #"
+    RESULTS_DIR = os.path.join(os.path.curdir, "results")
     DICE_CSV_FILENAME = "dice.csv"
     HD_CSV_FILENAME = "hd.csv"
     FD_SEP_CSV_FILENAME = "fd-sep.csv"
+    LAMBDA = 10000
 
     LUT = {
             PATIENT_NUM_KEY: PATIENT_NUM_KEY,

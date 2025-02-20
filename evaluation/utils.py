@@ -3,8 +3,6 @@ import os
 import shutil
 import csv
 import numpy as np
-import nrrd
-import nibabel as nib
 import SimpleITK as sitk
 
 class Utils:

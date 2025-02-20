@@ -2,9 +2,8 @@ import os
 from evaluation.config import EvaluationConfig
 from evaluation.utils import Utils
 
-def create_params_txt(patient_dir, filename, segements=[]):
+def create_params_txt(patient_dir, filename, configs, segements=[]):
     
-    configs = EvaluationConfig()
     utils = Utils(configs)
     patient_number = utils.get_patient_number(patient_dir)
     # affine_transform_txt = os.path.join(patient_dir, f"{patient_number}-{configs.AFFINE_TRANSFORM_FILENAME}")
@@ -55,7 +54,7 @@ vf_out={vf_out}\n\n"""
     metric_params += "\n"
 
     for i in range(len(total_segements)):
-        metric_params += f"metric_lambda[{i}]=1\n" if i==0 else f"metric_lambda[{i}]=100000\n"
+        metric_params += f"metric_lambda[{i}]=1\n" if i==0 else f"metric_lambda[{i}]={configs.LAMBDA}\n"
     
     try:
         dir_name = os.path.dirname(params_txt)

@@ -1,5 +1,6 @@
 import argparse
 from glob import glob
+from evaluation.config import EvaluationConfig
 from evaluation.pipeline import EvaluationPipeline
 
 
@@ -29,7 +30,8 @@ if __name__=="__main__":
     else:
         args.nums = []
 
-    pipeline = EvaluationPipeline()
+    configs = EvaluationConfig()
+    pipeline = EvaluationPipeline(configs=configs)
     pipeline.evaluate(data, args.force, args.nums, args.all, args.seg, args.pw_linear,
                         args.dmap, args.cxt, args.fcsv, args.params, args.register,
                         args.warp, args.metric, args.fiducial_sep)

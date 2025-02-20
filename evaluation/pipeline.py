@@ -9,10 +9,11 @@ from evaluation.config import EvaluationConfig
 from evaluation.utils import Utils
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 class EvaluationPipeline:
-    def __init__(self) -> None:
-        self.configs = EvaluationConfig()
+    def __init__(self, configs: EvaluationConfig) -> None:
+        self.configs: EvaluationConfig = configs
         self.DSC_df = { v: [] for v in self.configs.LUT.keys() }
         self.HD_df =  { v: [] for v in self.configs.LUT.keys() }
         self.FD_SEP_df = {
@@ -97,7 +98,7 @@ class EvaluationPipeline:
         
         patient_number, TS_roi_subset = self._utils.get_roi_subset(patient_dir)
         
-        NOPD = create_params_txt(patient_dir, self.configs.NOPD)
+        NOPD = create_params_txt(patient_dir, self.configs.NOPD, self.configs)
         
         segments = []
         for class_name in TS_roi_subset:
@@ -106,7 +107,7 @@ class EvaluationPipeline:
                 "fixed_file": os.path.join(patient_dir, self.configs.FCVS_DIR, f"{class_name}.fcsv"),
                 "moving_file": os.path.join(patient_dir, self.configs.DMAPS_DIR, f"{class_name}.mha")
             })
-        TS = create_params_txt(patient_dir, self.configs.TS, segments)
+        TS = create_params_txt(patient_dir, self.configs.TS, self.configs, segments)
 
         ct_gt_contours_path = os.path.join(patient_dir, self.configs.GT_CONTOURS_DIR, self.configs.CT_DIR)
         if (str(patient_number) in self.configs.patients_with_GT) and (os.path.exists(ct_gt_contours_path)):
@@ -115,7 +116,7 @@ class EvaluationPipeline:
                     "fixed_file": os.path.join(patient_dir, self.configs.FCVS_DIR, f"{class_name}.fcsv"),
                     "moving_file": os.path.join(patient_dir, self.configs.DMAPS_DIR, f"{class_name}.mha")
                 }]
-            GT_bladder_only = create_params_txt(patient_dir, self.configs.GT_BLADDER_ONLY, segments)
+            GT_bladder_only = create_params_txt(patient_dir, self.configs.GT_BLADDER_ONLY, self.configs, segments)
 
             segments = []
             for class_name in self.configs.GT_roi_subset:
@@ -124,7 +125,7 @@ class EvaluationPipeline:
                     "fixed_file": os.path.join(patient_dir, self.configs.FCVS_DIR, f"{class_name}.fcsv"),
                     "moving_file": os.path.join(patient_dir, self.configs.DMAPS_DIR, f"{class_name}.mha")
                 })
-            GT = create_params_txt(patient_dir, self.configs.GT, segments)
+            GT = create_params_txt(patient_dir, self.configs.GT, self.configs, segments)
 
         return (NOPD, TS, GT_bladder_only, GT)
 
@@ -278,15 +279,20 @@ class EvaluationPipeline:
                     self.FD_SEP_df[key].append("inf")
 
     def write_results(self, all, metric, fiducial_sep):
+        results_dir = os.path.join(self.configs.RESULTS_DIR, datetime.now().strftime('%Y_%m_%d-%H_%M'))
+        # results_dir = os.path.join(self.configs.RESULTS_DIR, "lambda_eval", str(self.configs.LAMBDA))
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir, exist_ok=True)
+
         if all or metric:
             df = pd.DataFrame(self.DSC_df)
-            df.to_csv(self.configs.DICE_CSV_FILENAME, index=False)
+            df.to_csv(os.path.join(results_dir, self.configs.DICE_CSV_FILENAME), index=False)
             df = pd.DataFrame(self.HD_df)
-            df.to_csv(self.configs.HD_CSV_FILENAME, index=False)
+            df.to_csv(os.path.join(results_dir, self.configs.HD_CSV_FILENAME), index=False)
         
         if all or fiducial_sep:
             df = pd.DataFrame(self.FD_SEP_df)
-            df.to_csv(self.configs.FD_SEP_CSV_FILENAME, index=False)
+            df.to_csv(os.path.join(results_dir, self.configs.FD_SEP_CSV_FILENAME), index=False)
 
     def evaluate(self, data: str, force: bool=False, nums: List[int]=[], all: bool=False, seg: bool=False,
                  pw_linear: bool=False, dmap: bool=False, cxt: bool=False, fcsv: bool=False,

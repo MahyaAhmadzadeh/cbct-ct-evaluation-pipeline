@@ -9,7 +9,7 @@ class Plastimatch:
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch convert completed successfully.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"Error: Plastimatch convert failed with error: {e}")
 
     def pw_linear_transform(self, input_path, output_path):
@@ -17,7 +17,7 @@ class Plastimatch:
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch adjustment completed successfully.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"Error: Plastimatch adjustment failed with error: {e}")
 
     def dmap(self, input_path, output_path):
@@ -25,7 +25,7 @@ class Plastimatch:
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch dmap calculation completed successfully.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"Error: Plastimatch dmap calculation with error: {e}")
 
     def register(self, params_filepath):
@@ -33,7 +33,7 @@ class Plastimatch:
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch register completed successfully.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"Error: Plastimatch register failed with error: {e}")
             
     def warp(self, input, output_cmd, output, vf):
@@ -42,7 +42,7 @@ class Plastimatch:
         try:
             subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch warp completed successfully.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"Error: Plastimatch warp failed with error: {e}")
             
     def dice(self, segment, warp):
@@ -51,7 +51,7 @@ class Plastimatch:
         try:
             result = subprocess.run(command, stdout=subprocess.PIPE, text=True, check=True)
             print("Plastimatch dice completed successfully.")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             print(f"Error: Plastimatch dice failed with error: {e}")
         
         return result
