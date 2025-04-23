@@ -13,7 +13,7 @@ class EvaluationConfig:
     TS_male_roi_subset: List[str] = field(init=False)
     TS_female_roi_subset: List[str] = field(init=False)
     GT_roi_subset: List[str] = field(init=False)
-    patients_with_GT: List = field(default_factory= lambda: ["001","002", "007", "009", "010", "012", "014", "016", "018", "020"])
+    patients_with_GT: List = field(default_factory= lambda: ["001","002", "007", "009", "010", "012", "016", "018", "020","023"])
     CT_DIR = "CT"
     CBCT_DIR = "CBCT"
     GT_CONTOURS_DIR = "GT_contours"
