@@ -12,7 +12,7 @@ def create_params_txt(patient_dir, filename, configs, segements=[]):
     vf_out = os.path.join(patient_dir, configs.VF_VOLUMES_DIR, f"{configs.VF_PREFIX}{filename}.nrrd")
     
     ct_path = os.path.join(patient_dir, configs.CT_DIR)
-    cbct_path = os.path.join(patient_dir, configs.CBCT_DIR)
+    cbct_path = os.path.join(patient_dir, configs.LT_CBCT_DIR)
     total_segements = [{
             "fixed_file": ct_path,
             "moving_file": cbct_path
