@@ -92,7 +92,7 @@ MGH-002/
    python main.py -d ./datasets/MGH/MGH* -s -r
    ```
 ```
-
+---
 
 ## Available Variants
 
@@ -104,6 +104,7 @@ The pipeline supports multiple evaluation variants, controlled via folder names 
 - `genctseg_extorgans`: Same as above with extended organs
 - `genctall`: Segmentation + registration using generated CT
 - `genctall_extorgans`: Same as above with extended organs
+
 ---
 
 
@@ -116,6 +117,7 @@ After the pipeline runs, you'll find:
 - **Hausdorff Distance**: Surface similarity (if enabled in evaluation)
 
 ---
+
 ## 🧩 Dependencies
 
 - [Plastimatch](https://plastimatch.org/)
