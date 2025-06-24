@@ -70,7 +70,7 @@ MGH-002/
 
 ---
 
-## 🔧 Running the Pipeline
+## Running the Pipeline
 
 1. **Activate your environment**
    ```bash
@@ -79,7 +79,10 @@ MGH-002/
 
 2. **Run for a single or multiple patients**
    ```bash
-   # Force re-run all steps for patients 002 and 003
+   # Force re-run all steps for patients 002 and 003 for baseline variant
+   python main.py -d ./datasets/MGH/MGH* -v baseline -n 002,003 -a -f
+   
+   # Force re-run all steps for patients 002 and 003 for all variants
    python main.py -d ./datasets/MGH/MGH* -n 002,003 -a -f
 
    # Only run segmentation and registration for all patients (skip if already done)
@@ -88,7 +91,7 @@ MGH-002/
 
 ---
 
-## 🛠 Available Variants
+## Available Variants
 
 The pipeline supports multiple evaluation variants, controlled via folder names or internal arguments:
 
