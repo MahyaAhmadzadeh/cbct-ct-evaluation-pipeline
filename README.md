@@ -69,19 +69,19 @@ MGH-002/
 - Dice score tables summarize the overlap accuracy between warped and ground truth segmentations.
 ```
 
-```
 
 ## Running the Pipeline
-```
 
-```
+
+
 1. **Activate your environment**
+```
    ```bash
    conda activate pipeline
    ```
 ```
-```
 2. **Run for a single or multiple patients**
+```
    ```bash
    # Force re-run all steps for patients 002 and 003 for baseline variant
    python main.py -d ./datasets/MGH/MGH* -v baseline -n 002,003 -a -f
@@ -93,7 +93,7 @@ MGH-002/
    python main.py -d ./datasets/MGH/MGH* -s -r
    ```
 ```
-```
+
 
 ## Available Variants
 
@@ -106,8 +106,7 @@ The pipeline supports multiple evaluation variants, controlled via folder names 
 - `genctall`: Segmentation + registration using generated CT
 - `genctall_extorgans`: Same as above with extended organs
 
-```
-```
+
 
 ## 📊 Metrics
 
@@ -117,7 +116,6 @@ After the pipeline runs, you'll find:
 - **Fiducial Distance**: Euclidean distances between landmark points (if available)
 - **Hausdorff Distance**: Surface similarity (if enabled in evaluation)
 
-```
 
 ## 🧩 Dependencies
 
