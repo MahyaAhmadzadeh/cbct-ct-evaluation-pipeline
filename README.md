@@ -6,7 +6,7 @@ This pipeline supports multiple evaluation variants and tracks outputs for segme
 
 ---
 
-## 📁 Folder Overview
+## Folder Overview
 
 Each patient folder (e.g., `MGH-001`, `MGH-002`, etc.) resides under `./datasets/MGH/` and is processed with multiple evaluation variants. After running the pipeline, you will see subfolders such as:
 
@@ -105,7 +105,7 @@ The pipeline supports multiple evaluation variants, controlled via folder names 
 ---
 
 
-## 📊 Metrics
+## Metrics
 
 After the pipeline runs, you'll find:
 
@@ -115,7 +115,7 @@ After the pipeline runs, you'll find:
 
 ---
 
-## 🧩 Dependencies
+## Dependencies
 
 - [Plastimatch](https://plastimatch.org/)
 - [TotalSegmentator](https://github.com/wasserth/TotalSegmentator)
