@@ -47,18 +47,26 @@ MGH-002/
 
 ---
 
-## 🔍 Where to Find Segmentations
+## Where to Find Segmentations
 
-| Type                      | Location (example for MGH-002)                                      | Format   |
-|---------------------------|----------------------------------------------------------------------|----------|
-| Ground Truth CT                    | `MGH-002/GT_contours/CT/`                                           | `.mha`  |
-| Ground Truth CBCT                  | `MGH-002/GT_contours/CBCT/`                                         | `.mha`  |
-| TotalSegmentator Cropped Segs      | `MGH-002/eval_baseline/seg/uncrp_CT_segments/`                      | `.nrrd`  |
-|                                    | `MGH-002/eval_baseline/seg/uncrp_LT_CBCT_segments/`                 | `.nrrd`  |
-| Warped Segmentations      | `MGH-002/eval_baseline/warps/`                                      | `.mha`   |
-| Warped CBCT seg vs GT CT seg Dice| `results/merged_all/structure_tables_extorgans/Prostate_dice_table.csv`        | `.csv`   |
+| **Data Type**                     | **Location (example for MGH-002)**                                           | **Format** |
+|-----------------------------------|-------------------------------------------------------------------------------|------------|
+| Ground Truth CT                   | `MGH-002/GT_contours/CT/`                                                     | `.mha`     |
+| Ground Truth CBCT                 | `MGH-002/GT_contours/CBCT/`                                                   | `.mha`     |
+| TotalSegmentator (Uncropped CT)   | `MGH-002/eval_baseline/uncrp_CT_segments/`                                    | `.nrrd`    |
+| TotalSegmentator (Uncropped CBCT) | `MGH-002/eval_baseline/uncrp_LT_CBCT_segments/`                               | `.nrrd`    |
+| TotalSegmentator (Cropped CT)     | `MGH-002/eval_baseline/CT_seg/`                                               | `.nrrd`    |
+| TotalSegmentator (Cropped CBCT)   | `MGH-002/eval_baseline/LT_CBCT_seg/`                                          | `.nrrd`    |
+| Warped CBCT Segmentations         | `MGH-002/eval_baseline/warps/seg`                                             | `.mha`     |
+| Dice Scores (CBCT→CT)             | `results/merged_all/structure_tables_extorgans/Prostate_dice_table.csv`       | `.csv`     |
 
-> Similar structure is repeated for all evaluation variants (`eval_extorgans`, `eval_genctseg`, etc.).
+> Similar folder and file structure applies to other evaluation variants (`eval_extorgans`, `eval_genctseg`, etc.).
+
+### Notes:
+- **Cropped** segmentations are aligned to the region of interest (e.g., prostate/bladder) for faster registration and clearer boundary refinement.
+- **Uncropped** segmentations retain the full-body/volume field and are used for complete structure analysis.
+- Warped segmentations are the result of deformable registration (e.g., CT → CBCT space).
+- Dice score tables summarize the overlap accuracy between warped and ground truth segmentations.
 
 ---
 
