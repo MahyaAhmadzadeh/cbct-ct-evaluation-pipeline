@@ -43,10 +43,10 @@ MGH-002/
 ├── 002-LinearTransform.txt      # Affine transform file from 3D Slicer
 ```
 
+
+
+
 ```
-
----
-
 ## Where to Find Segmentations
 
 | **Data Type**                     | **Location (example for MGH-002)**                                           | **Format** |
@@ -67,16 +67,20 @@ MGH-002/
 - **Uncropped** segmentations retain the volume field and can be used for comparison.
 - Warped segmentations are the result of deformable registration (e.g., CBCT → CT space).
 - Dice score tables summarize the overlap accuracy between warped and ground truth segmentations.
+```
 
----
+```
 
 ## Running the Pipeline
+```
 
+```
 1. **Activate your environment**
    ```bash
    conda activate pipeline
    ```
-
+```
+```
 2. **Run for a single or multiple patients**
    ```bash
    # Force re-run all steps for patients 002 and 003 for baseline variant
@@ -88,8 +92,8 @@ MGH-002/
    # Only run segmentation and registration for all patients (skip if already done)
    python main.py -d ./datasets/MGH/MGH* -s -r
    ```
-
----
+```
+```
 
 ## Available Variants
 
@@ -102,7 +106,8 @@ The pipeline supports multiple evaluation variants, controlled via folder names 
 - `genctall`: Segmentation + registration using generated CT
 - `genctall_extorgans`: Same as above with extended organs
 
----
+```
+```
 
 ## 📊 Metrics
 
@@ -112,7 +117,7 @@ After the pipeline runs, you'll find:
 - **Fiducial Distance**: Euclidean distances between landmark points (if available)
 - **Hausdorff Distance**: Surface similarity (if enabled in evaluation)
 
----
+```
 
 ## 🧩 Dependencies
 
