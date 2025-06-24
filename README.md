@@ -79,7 +79,6 @@ MGH-002/
    ```bash
    conda activate pipeline
    ```
-```
 2. **Run for a single or multiple patients**
 ```
    ```bash
@@ -105,7 +104,7 @@ The pipeline supports multiple evaluation variants, controlled via folder names 
 - `genctseg_extorgans`: Same as above with extended organs
 - `genctall`: Segmentation + registration using generated CT
 - `genctall_extorgans`: Same as above with extended organs
-
+---
 
 
 ## 📊 Metrics
@@ -116,7 +115,7 @@ After the pipeline runs, you'll find:
 - **Fiducial Distance**: Euclidean distances between landmark points (if available)
 - **Hausdorff Distance**: Surface similarity (if enabled in evaluation)
 
-
+---
 ## 🧩 Dependencies
 
 - [Plastimatch](https://plastimatch.org/)
