@@ -1,6 +1,6 @@
 # CBCT-to-CT Evaluation Pipeline (Modified from Santhosh)
 
-This is a modified version of the Cycle-GAN CBCT-to-CT Evaluation Pipeline originally developed by Santhosh. The goal is to evaluate registration and segmentation performance on MGH CBCT and CT and generated CT dataset using deformable image registration, segmentation tools (e.g., TotalSegmentator), and various evaluation metrics (Dice, Hausdorff, fiducial distance) .
+This is a modified version of the Cycle-GAN CBCT-to-CT Evaluation Pipeline originally developed by Santhosh. The goal is to evaluate registration and segmentation performance on MGH CBCT and CT and generated CT dataset using deformable image registration, segmentation tools (e.g., TotalSegmentator), and various evaluation metrics (Dice, Hausdorff, fiducial distance) for LT-CBCT in MSE and 3 other PD variants (GT-bladder-rectum, GT-All, TS-bladder, TS-extra)​.
 
 This pipeline supports multiple evaluation variants and tracks outputs for segmentations, warped images, registration files, and metrics.
 
