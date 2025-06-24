@@ -63,9 +63,9 @@ MGH-002/
 > Similar folder and file structure applies to other evaluation variants (`eval_extorgans`, `eval_genctseg`, etc.).
 
 ### Notes:
-- **Cropped** segmentations are aligned to the region of interest (e.g., prostate/bladder) for faster registration and clearer boundary refinement.
-- **Uncropped** segmentations retain the full-body/volume field and are used for complete structure analysis.
-- Warped segmentations are the result of deformable registration (e.g., CT → CBCT space).
+- **Cropped** CT segmentations are aligned to the CBCT segmentations field of view for faster registration and clearer boundary refinement.
+- **Uncropped** segmentations retain the volume field and can be used for comparison.
+- Warped segmentations are the result of deformable registration (e.g., CBCT → CT space).
 - Dice score tables summarize the overlap accuracy between warped and ground truth segmentations.
 
 ---
