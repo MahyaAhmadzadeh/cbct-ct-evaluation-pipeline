@@ -46,7 +46,7 @@ MGH-002/
 
 
 
-```
+---
 ## Where to Find Segmentations
 
 | **Data Type**                     | **Location (example for MGH-002)**                                           | **Format** |
@@ -60,14 +60,14 @@ MGH-002/
 | Warped CBCT Segmentations         | `MGH-002/eval_baseline/warps/seg`                                             | `.mha`     |
 | Dice Scores (CBCT→CT)             | `results/merged_all/structure_tables_extorgans/Prostate_dice_table.csv`       | `.csv`     |
 
-> Similar folder and file structure applies to other evaluation variants (`eval_extorgans`, `eval_genctseg`, etc.).
+
 
 ### Notes:
 - **Cropped** CT segmentations are aligned to the CBCT segmentations field of view for faster registration and clearer boundary refinement.
 - **Uncropped** segmentations retain the volume field and can be used for comparison.
 - Warped segmentations are the result of deformable registration (e.g., CBCT → CT space).
 - Dice score tables summarize the overlap accuracy between warped and ground truth segmentations.
-```
+---
 
 
 ## Running the Pipeline
@@ -75,12 +75,10 @@ MGH-002/
 
 
 1. **Activate your environment**
-```
    ```bash
    conda activate pipeline
    ```
 2. **Run for a single or multiple patients**
-```
    ```bash
    # Force re-run all steps for patients 002 and 003 for baseline variant
    python main.py -d ./datasets/MGH/MGH* -v baseline -n 002,003 -a -f
@@ -91,7 +89,6 @@ MGH-002/
    # Only run segmentation and registration for all patients (skip if already done)
    python main.py -d ./datasets/MGH/MGH* -s -r
    ```
-```
 ---
 
 ## Available Variants
