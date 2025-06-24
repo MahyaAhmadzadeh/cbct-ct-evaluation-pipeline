@@ -1,122 +1,115 @@
-## Cycle-GAN CBCT-CT Evaluation Pipeline
-Evaluation pipleline for the CBCT to CT domain transfer using Cycle-GAN project. Uses Plastimatch to do all the necessary functions and finally calculates the Dice Similaruty Score, Hausdorff Distance and the Euclidean distance of the fiducial markers. This project utilizes [Plastimatch](https://plastimatch.org/), [TotalSegmentor](https://github.com/wasserth/TotalSegmentator), [3D Slicer](https://www.slicer.org/).
+# CBCT-to-CT Evaluation Pipeline (Modified from Santhosh)
 
-## Folder Structure
-Copy the {patient-number}-LinearTransforms.txt file from the LinearTransforms folder to the respective Patient folders and make sure the project structure look likes this before proceeding.
+This is a modified version of the Cycle-GAN CBCT-to-CT Evaluation Pipeline originally developed by Santhosh. The goal is to evaluate registration and segmentation performance on CBCT and CT scans using deformable image registration, segmentation tools (e.g., TotalSegmentator), and various evaluation metrics (Dice, Hausdorff, fiducial distance).
 
-```text
-project/
-├── datasets/
-│   └── pelvic_reference/
-│       ├── Pelvic-Ref-001/              # Patient with GT contours
-│       │   ├── CBCT/                    # Contains the CBCT DICOM files
-│       │   ├── CT/                      # Contains the CT DICOM files
-│       │   ├── FDMs/                    # Contains the Fiducial Distance Markup files (if available)
-│       │   ├── GT_contours/             # Contains ground truth contours
-│       │   │   ├── CT/                  # CT contours in .mha format
-│       │   │   └── CBCT/                # CBCT contours in .mha format
-│       │   └── 001-LinearTransform.txt  # Affine transform values from 3D Slicer
-│       ├── Pelvic-Ref-002/              # Patient without GT contours
-│       │   ├── CBCT/
-│       │   ├── CT/
-│       │   └── 002-LinearTransform.txt
-│       └── ... (additional patient data folders)
-├── evaluation/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── fcsv.py
-│   ├── params.py
-│   ├── pipeline.py
-│   ├── plastimatch.py
-│   └── util.py
-├── main.py
-├── requirements.txt
-└── README.md
-```
-## Steps to Run the Code
-1. Create a new environment
-   ```bash
-   conda create --name eval-pipeline python=3.10
-   conda activate eval-pipeline
-   ```
-   
-
-2. Install the dependencies
-   
-   a. **Install PyTorch** - [PyTorch Installation](https://pytorch.org/get-started/locally/).  
-   
-   b. **Install the Remaining Dependencies** 
-      ```bash
-      pip install -r requirements.txt
-   ```
-4. Run the pipeline in terminal (-d argument should be in glob format)
-   ```bash
-   python main.py -d ./datasets/pelvic_reference/Pel*
-   ```
-5. Run the pipeline from code
-   ```python
-   from evaluation.pipeline import EvaluationPipeline
-   from glob import glob
-   import os
-
-   data = glob(os.path.join(os.path.curdir, "datasets", "pelvic_reference", "Pel*"))
-   pipeline = EvaluationPipeline()
-   pipeline.evaluate(data)
-   ```
-## Evaluation Pipeline Arguments
-1. For Terminal
-  ```text
-usage: main.py [-h] [-d] [-n] [-f] [-a] [-s] [-pw] [-dm] [-c] [-fc] [-p] [-r] [-w] [-m] [-fs]
-
-options:
-  -h, --help            show this help message and exit
-  -d, --data            all patient dirs in glob format
-  -n, --nums            patient numbers to process (in csv format)
-  -f, --force           force run, deletes previous results and creates a new one. Otherwise skips the step if results already present
-  -a, --all             run all the steps
-  -s, --seg             run segmentation only
-  -pw, --pw-linear      run pw-linear transformation only
-  -dm, --dmap           run dmap calculation only
-  -c, --cxt             run cxt conversion only
-  -fc, --fcsv           run fcsv creation only
-  -p, --params          run register params.txt creation only
-  -r, --register        run plastimatch register only
-  -w, --warp            run warp only
-  -m, --metric          run calculate scores only
-  -fs, --fiducial-sep   run calculate fiducial distance only
-```
-Example:
-```bash
-  1. python main.py -d ./datasets/pelvic_reference/Pel* -f -n 3,4 -a        # Force runs all the steps for patients 3 and 4
-  2. python main.py -d ./datasets/pelvic_reference/Pel* -f -n 3,4 -s -pw    # Force runs the segmentation and pw-linear transform steps for patients 3 and 4
-  3. python main.py -d ./datasets/pelvic_reference/Pel* -f -s -pw           # Force runs the segmentation and pw-linear transform steps for all the patients
-  3. python main.py -d ./datasets/pelvic_reference/Pel* -s -pw              # Initates the segmentation and pw-linear transform steps for all the patients, but skips if the result is already present
-  ```
-2. For Python
-   ```python
-   nums = [] or [3, 4]   # Runs for all the patients if [] is passed
-   force = False
-   all = True            # Runs all the steps if True
-   seg = False
-   pw_linear = False
-   dmap = False
-   cxt = False
-   fcsv = False
-   params = False
-   register = False
-   warp = False
-   metric = False
-   fiducial_sep = False
-   data = glob(os.path.join(os.path.curdir, "datasets", "pelvic_reference", "Pel*"))
-   
-   pipeline = EvaluationPipeline()
-   pipeline.evaluate(data, force, nums, all, seg, pw_linear,
-                        dmap, cxt, fcsv, params, register,
-                        warp, metric, fiducial_sep)
-   ```
-
-## References
-1. [Plastimatch](https://plastimatch.org/)
-2. [TotalSegmentator](https://github.com/wasserth/TotalSegmentator)
+This pipeline supports multiple evaluation variants and tracks outputs for segmentations, warped images, registration files, and metrics.
 
 ---
+
+## 📁 Folder Overview
+
+Each patient folder (e.g., `MGH-001`, `MGH-002`, etc.) resides under `./datasets/MGH/` and is processed with multiple evaluation variants. After running the pipeline, you will see subfolders such as:
+
+```
+```
+MGH-002/
+├── CBCT/                         # Median filtered and affine-transformed CBCT DICOM files
+├── CT/                           # Original CT DICOM files
+├── GT_contours/                  # Ground-truth segmentations
+│   ├── CBCT/                     # Ground truth on CBCT in .mha format (affine-transformed)
+│   └── CT/                       # Ground truth on CT in .mha format
+├── GENERATED_CT/                 # Generated synthetic CT (e.g., via CycleGAN, in .nrrd format)
+├── eval_baseline/                # Evaluation results for baseline variant (vanilla TS + PD)
+│   ├── CT_seg/                   # Cropped TotalSegmentator segmentations on CT
+│   ├── LT_CBCT/                  # Linear-transformed CBCT volume folder
+│   ├── LT_CBCT_seg/              # Cropped TotalSegmentator segmentations on LT_CBCT
+│   ├── cxts/                     # Converted contours in .cxt format (CBCT/CT)
+│   ├── dmaps/                    # Distance maps from contours for CBCT
+│   ├── fcsvs/                    # .fcsv files for CT
+│   ├── register_params/          # Parameter text files for registration
+│   ├── registered_volumes/       # Registered CBCT volumes into CT space
+│   ├── uncropped_cxts/           # Full-size (uncropped) .cxt contours
+│   ├── uncropped_dmaps/          # Full-size distance maps for CBCT
+│   ├── uncropped_fcsvs/          # Full-size .fcsv files for CT
+│   ├── uncrp_CT_segments/        # Full-size TotalSegmentator segmentation on CT
+│   ├── uncrp_LT_CBCT_segments/   # Full-size TotalSegmentator segmentation on LT_CBCT
+│   ├── VFs/                      # Deformation vector fields from registration
+│   ├── warps/                    # Warped CBCT segmentations into CT space
+│   └── LT_CBCT.nrrd              # Affine-transformed CBCT volume as single .nrrd file
+├── eval_extorgans/              # Variant using extended organ set for registration
+├── eval_genctseg/               # Variant using synthetic CT (GEN_CT) for segmentation
+├── eval_genctseg_extorgans/     # Synthetic CT segmentation + extended organs for registration
+├── eval_genctall/               # Uses generated CT for both segmentation and registration (MSE + PD)
+├── eval_genctall_extorgans/     # Same as above but with extended organ set
+├── 002-LinearTransform.txt      # Affine transform file from 3D Slicer
+```
+
+```
+
+---
+
+## 🔍 Where to Find Segmentations
+
+| Type                      | Location (example for MGH-002)                                      | Format   |
+|---------------------------|----------------------------------------------------------------------|----------|
+| Ground Truth CT                    | `MGH-002/GT_contours/CT/`                                           | `.mha`  |
+| Ground Truth CBCT                  | `MGH-002/GT_contours/CBCT/`                                         | `.mha`  |
+| TotalSegmentator Cropped Segs      | `MGH-002/eval_baseline/seg/uncrp_CT_segments/`                      | `.nrrd`  |
+|                                    | `MGH-002/eval_baseline/seg/uncrp_LT_CBCT_segments/`                 | `.nrrd`  |
+| Warped Segmentations      | `MGH-002/eval_baseline/warps/`                                      | `.mha`   |
+| Warped CBCT seg vs GT CT seg Dice| `results/merged_all/structure_tables_extorgans/Prostate_dice_table.csv`        | `.csv`   |
+
+> Similar structure is repeated for all evaluation variants (`eval_extorgans`, `eval_genctseg`, etc.).
+
+---
+
+## 🔧 Running the Pipeline
+
+1. **Activate your environment**
+   ```bash
+   conda activate pipeline
+   ```
+
+2. **Run for a single or multiple patients**
+   ```bash
+   # Force re-run all steps for patients 002 and 003
+   python main.py -d ./datasets/MGH/MGH* -n 002,003 -a -f
+
+   # Only run segmentation and registration for all patients (skip if already done)
+   python main.py -d ./datasets/MGH/MGH* -s -r
+   ```
+
+---
+
+## 🛠 Available Variants
+
+The pipeline supports multiple evaluation variants, controlled via folder names or internal arguments:
+
+- `baseline`: GT All + NOPD + GT_Bladder_Rectum_only, TS_Bladder_Only
+- `extorgans`: TS_Extra_Organs
+- `genctseg`: baseline but with generated CT in only TS segmentation
+- `genctseg_extorgans`: Same as above with extended organs
+- `genctall`: Segmentation + registration using generated CT
+- `genctall_extorgans`: Same as above with extended organs
+
+---
+
+## 📊 Metrics
+
+After the pipeline runs, you'll find:
+
+- **Dice Score Tables**: CSVs summarizing segmentation overlap per structure
+- **Fiducial Distance**: Euclidean distances between landmark points (if available)
+- **Hausdorff Distance**: Surface similarity (if enabled in evaluation)
+
+---
+
+## 🧩 Dependencies
+
+- [Plastimatch](https://plastimatch.org/)
+- [TotalSegmentator](https://github.com/wasserth/TotalSegmentator)
+- [3D Slicer](https://www.slicer.org/)
+
+---
+
+Feel free to raise issues or contribute improvements to this fork.
