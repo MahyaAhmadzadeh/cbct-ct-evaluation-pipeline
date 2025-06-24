@@ -11,7 +11,6 @@ This pipeline supports multiple evaluation variants and tracks outputs for segme
 Each patient folder (e.g., `MGH-001`, `MGH-002`, etc.) resides under `./datasets/MGH/` and is processed with multiple evaluation variants. After running the pipeline, you will see subfolders such as:
 
 ```
-```
 MGH-002/
 ├── CBCT/                         # Median filtered and affine-transformed CBCT DICOM files
 ├── CT/                           # Original CT DICOM files
