@@ -78,7 +78,7 @@ MGH-002/
    ```
 2. **Run for a single or multiple patients**
    ```bash
-   # Force re-run all steps for patients 002 and 003 for baseline variant
+   # Force re-run of all steps for patients 002 and 003 using the baseline variant
    python main.py -d ./datasets/MGH/MGH* -v baseline -n 002,003 -a -f
    
    # Force re-run all steps for patients 002 and 003 for all variants
